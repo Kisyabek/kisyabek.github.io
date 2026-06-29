@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deadlock Character Randomizer</title>
+    <script type="text/javascript" src="brython.js"></script>
+    <script type="text/javascript" src="brython_stdlib.js"></script>
+    
+  <style>
+  
+.form-popup {
+  display: none;
+  background-color: Black;
+  position: fixed;
+  border: 3px solid;
+  z-index: 9;
+  color: White;
+  margin: auto;
+  top: 50%;
+  left: 50%;
+  translate: -50%;
+  padding: 15px;
+}
+
+.container {
+  display: block;
+  position: fixed;
+  left: 50%;
+  translate: -50%;
+}
+
+.checkboxes {
+  color: White;
+}
+
+
+  </style>
+  
+</head>
+<!-- Initialize Brython on page load -->
+<body onload="brython()" style="background-image: url('background.png');">
+
+
+
+<div class="container">
+    <h2 style="color: White;">Deadlock Character Randomizer</h2>
+
+    <table style="color: White;">
+        <tr>
+            <th style="color: #d9c6a7; background-color: #947700">The Hidden King</th>
+            <th></th>
+            <th></th>
+            <th style="color: #cac0c2; background-color: #4257a1">The Archmother</th>
+        </tr>
+        <tr>
+            <th style="color: #d9c6a7; background-color: #947700">Player</th>
+            <th style="color: #d9c6a7; background-color: #947700">Unwanted characters</th>
+            <th style="color: #cac0c2; background-color: #4257a1">Unwanted characters</th>
+            <th style="color: #cac0c2; background-color: #4257a1">Player</th>
+        </tr>
+        <tr>
+            <td><select id="team_a_player1_name"></select></td>
+            <td><input type="text" id="team_a_player1_characters" placeholder="Abrams, Apollo, Bebop"></td>
+            <td><input type="text" id="team_b_player1_characters" placeholder="Abrams, Apollo, Bebop"></td>
+            <td><select id="team_b_player1_name"></select></td>
+        </tr>
+            <td><select id="team_a_player2_name"></select></td>
+            <td><input type="text" id="team_a_player2_characters" placeholder="Abrams, Apollo, Bebop"></td>
+            <td><input type="text" id="team_b_player2_characters" placeholder="Abrams, Apollo, Bebop"></td>
+            <td><select id="team_b_player2_name"></select></td>
+        </tr>
+        <tr>
+            <td><select id="team_a_player3_name"></select></td>
+            <td><input type="text" id="team_a_player3_characters" placeholder="Abrams, Apollo, Bebop"></td>
+            <td><input type="text" id="team_b_player3_characters" placeholder="Abrams, Apollo, Bebop"></td>
+            <td><select id="team_b_player3_name"></select></td>
+        </tr>
+        <tr>
+            <td><select id="team_a_player4_name"></select></td>
+            <td><input type="text" id="team_a_player4_characters" placeholder="Abrams, Apollo, Bebop"></td>
+            <td><input type="text" id="team_b_player4_characters" placeholder="Abrams, Apollo, Bebop"></td>
+            <td><select id="team_b_player4_name"></select></td>
+        </tr>
+        <tr>
+            <td><select id="team_a_player5_name"></select></td>
+            <td><input type="text" id="team_a_player5_characters" placeholder="Abrams, Apollo, Bebop"></td>
+            <td><input type="text" id="team_b_player5_characters" placeholder="Abrams, Apollo, Bebop"></td>
+            <td><select id="team_b_player5_name"></select></td>
+        </tr>
+        <tr>
+            <td><select id="team_a_player6_name"></select></td>
+            <td><input type="text" id="team_a_player6_characters" placeholder="Abrams, Apollo, Bebop"></td>
+            <td><input type="text" id="team_b_player6_characters" placeholder="Abrams, Apollo, Bebop"></td>
+            <td><select id="team_b_player6_name"></select></td>
+        </tr>
+    </table>
+
+
+    <button id="rand-btn">Randomize Characters</button>
+    <br>
+    <text style="white-space: pre-wrap; color: White;" id="output"></text>
+    
+    
+    
+  <div class="checkboxes">
+    <input type="checkbox" id="duplicate_same_team" name="duplicate_same_team" value=" ">
+    <label for="duplicate_same_team"> Allow duplicate heroes on same team</label><br>
+    
+    <input type="checkbox" id="duplicate_opposite_team" name="duplicate_opposite_team" value=" ">
+    <label for="duplicate_opposite_team"> Allow duplicate heroes on opposite team</label><br>
+  </div>
+
+  <div class="form-popup" id="myForm" style="hidden: True;">
+    <input type="text" id="enter_player_name" autocomplete="off" placeholder="Enter Player name" name="name" required>
+    <div class="buttons">
+      <button type="submit" id="accept" class="btn">Accept</button>
+      <button type="button" id="cancel" class="btn cancel">Close</button>
+    </div>
+  </div>
+
+</div>
+
+
+
+
+
+
+<!-- Python Logic running on top of Brython -->
+<script type="text/python">
+import random
+from browser import document, bind, html, window
+
+Heroes = ["Abrams", "Apollo", "Bebop", "Billy", "Calico", "Celeste", "The Doorman", "Drifter", "Dynamo", "Graves", "Grey Talon", "Haze"]
+
+Heroes_cache = ["Abrams", "Apollo", "Bebop", "Billy", "Calico", "Celeste", "The Doorman", "Drifter", "Dynamo", "Graves", "Grey Talon", "Haze", "Holliday",
+        "Infernus", "Ivy", "Kelvin", "Lady Geist", "Lash", "McGinnis", "Mina", "Mirage", "Mo & Krill", "Paige", "Paradox", "Pocket", "Rem",
+        "Seven", "Shiv", "Silver", "Sinclair", "Venator", "Victor", "Vindicta", "Viscous", "Vyper", "Warden", "Wraith", "Yamato"]
+
+
+all_players = {
+    "Kisyabek": ["Abrams", "Apollo"],
+    "Artesius": ["Bebop", "Billy"],
+    "Willow": ["Calico", "Celeste"],
+    "KaSatka": ["The Doorman", "Drifter"],
+    "Свіжий": ["Dynamo", "Graves"],
+    "Hound": ["Grey Talon", "Haze"]
+} # цей словник потрібний щоб в нього зберігати, діставати забанених персонажів для гравця в функціях save_banned_heroes та pull_banned_heroes
+
+
+for team in ["a", "b"]:
+    for n in range(1,7):
+        document[f"team_{team}_player{n}_name"] <= html.OPTION("None")
+        document[f"team_{team}_player{n}_name"] <= html.OPTION("Custom")
+        for player in all_players.keys():
+            document[f"team_{team}_player{n}_name"] <= html.OPTION(player)
+
+
+def print_to_output(string):
+    print(string)
+    output_element = document.getElementById("output")
+    output_element.textContent += string + "\n"
+
+
+def clear_output():
+    output_element = document.getElementById("output")
+    output_element.textContent = ""
+
+
+def characters_inert_toggle(event):
+    for team in ["a", "b"]:
+        for n in range(1,7):
+            player_name_field = document[f"team_{team}_player{n}_name"]
+            unwanted_characters_field = document[f"team_{team}_player{n}_characters"]
+            if player_name_field == event.target and event.target.value != "None" and event.target.value != "Custom":
+                unwanted_characters_field = document[f"team_{team}_player{n}_characters"].inert = False
+                print("inert reverted")
+                return
+            elif player_name_field == event.target and event.target.value == "None":
+                unwanted_characters_field = document[f"team_{team}_player{n}_characters"].inert = True
+                print("inerted")
+                return
+
+
+def show_form(event):
+    if event.target.value == "Custom":
+        print(event.target.value + " name was chosen")
+        document["myForm"].style.display = "block"
+        for team in ["a", "b"]:
+            for n in range(1,7):
+                document[f"team_{team}_player{n}_name"].inert = True
+                document[f"team_{team}_player{n}_characters"].inert = True
+        document["rand-btn"].inert = True
+        document["duplicate_same_team"].inert = True
+        document["duplicate_opposite_team"].inert = True
+
+
+def save_banned_heroes(event): # коли міняєш забанених персонажів гравцям, вони міняються і в all_players
+    print(event.target.id)
+    for team in ["a", "b"]:
+        for n in range(1,7):
+            player_name = document.getElementById(f"team_{team}_player{n}_name").value
+            unwanted_characters = document.getElementById(f"team_{team}_player{n}_characters").value.split()
+            unwanted_characters_field = document.getElementById(f"team_{team}_player{n}_characters")
+            if unwanted_characters_field == event.target:
+                all_players[player_name] = unwanted_characters
+                print(all_players)
+                break
+
+
+def pull_banned_heroes(event): # коли обираєш гравців, їх забанені персонажі, збережені в all_players, з'являються в рядку забанених персонажів
+    if event.target.value != "None" and event.target.value != "Custom":
+        print(event.target.value + "'s heroes pulled")
+        for team in ["a", "b"]:
+            for n in range(1,7):
+                player_name = document.getElementById(f"team_{team}_player{n}_name").value
+                if player_name == event.target.value:
+                    document.getElementById(f"team_{team}_player{n}_characters").value = all_players[player_name]
+                    return
+
+
+def clear_banned_heroes(event): # коли на місці гравця обираєш Custom чи None, рядок забанених персонажів стає пустим списком
+    if event.target.value == "None" or event.target.value == "Custom":
+        for team in ["a", "b"]:
+            for n in range(1,7):
+                player_name_id = document.getElementById(f"team_{team}_player{n}_name").id
+                if player_name_id == event.target.id:
+                    document.getElementById(f"team_{team}_player{n}_characters").value = []
+                    return
+
+
+def hide_player(event):
+    print("hide_player fired")
+    for team in ["a", "b"]:
+        for n in range(1,7):
+            if event.target != document[f"team_{team}_player{n}_name"]:
+                for option in document[f"team_{team}_player{n}_name"]:
+                    if event.target.value == option.value and event.target.value != "None" and event.target.value != "Custom":
+                        option.hidden = True
+            if event.target == document[f"team_{team}_player{n}_name"]:
+                if event.target.value != document[f"team_{team}_player{n}_name"].value:
+                    print(event.target.value)
+                    print(document[f"team_{team}_player{n}_name"].value)
+
+
+def unhide_player(event):
+    unhidden_options = []
+    for child in event.target.children:
+        if child.hidden == False and child.value != event.target.value and child.value != "None" and child.value != "Custom":
+            unhidden_options.append(child.value)
+    for unhidden_option in unhidden_options:
+        for team in ["a", "b"]:
+            for n in range(1,7):
+                if event.target != document[f"team_{team}_player{n}_name"]:
+                    for option in document[f"team_{team}_player{n}_name"]:
+                        if option.hidden == True and option.value == unhidden_option:
+                            option.hidden = False
+
+
+last_target = None
+
+def save_name_target(event):
+    global last_target
+    last_target = event.target
+    print(last_target)
+    print(last_target.value)
+
+
+for team in ["a", "b"]:
+    for n in range(1,7):
+        document[f"team_{team}_player{n}_name"].bind("change", hide_player)
+        document[f"team_{team}_player{n}_name"].bind("change", unhide_player)
+        document[f"team_{team}_player{n}_name"].bind("change", show_form)
+        document[f"team_{team}_player{n}_characters"].bind("blur", save_banned_heroes)
+        document[f"team_{team}_player{n}_name"].bind("change", pull_banned_heroes)
+        document[f"team_{team}_player{n}_name"].bind("change", clear_banned_heroes)
+        document[f"team_{team}_player{n}_characters"].inert = True
+        document[f"team_{team}_player{n}_name"].bind("change", characters_inert_toggle)
+        document[f"team_{team}_player{n}_name"].bind("change", save_name_target)
+
+@bind("#rand-btn", "click")
+def randomize(event):
+    clear_output()
+
+    picked_heroes = [] # сюди додаються герої яких нарандомило
+    picked_heroes_team_a = []
+    picked_heroes_team_b = []
+    current_players_team_a = {}
+    current_players_team_b = {}
+
+
+    for n in range(1,7): # заповнюється current_players_team_a
+        player_name_field = document.getElementById(f"team_a_player{n}_name")
+        player_name_value = player_name_field.value
+
+        unwanted_characters_field = document.getElementById(f"team_a_player{n}_characters")
+        unwanted_characters = unwanted_characters_field.value.split(",")
+        
+        if player_name_value and player_name_value != "None":
+            current_players_team_a[player_name_value] = unwanted_characters
+    print_to_output(str(current_players_team_a))
+
+    for n in range(1,7): # заповнюється current_players_team_b
+        player_name_field = document.getElementById(f"team_b_player{n}_name")
+        player_name_value = player_name_field.value
+
+        unwanted_characters_field = document.getElementById(f"team_b_player{n}_characters")
+        unwanted_characters = unwanted_characters_field.value.split(",")
+
+        if player_name_value and player_name_value != "None":
+            current_players_team_b[player_name_value] = unwanted_characters
+    print_to_output(str(current_players_team_b))
+
+
+    for player_name, banned_characters in current_players_team_a.items(): # для кожної гравця з команди а тут створюється список дозволених персонажів
+        hero_pool = []
+        for name in Heroes:
+            if name not in banned_characters:
+                hero_pool.append(name)
+        hero_count = len(hero_pool)
+
+        if document["duplicate_same_team"].checked == False and document["duplicate_opposite_team"].checked == False: # повторювані не дозволені
+            print("no duplicates")
+            while True: # рандомиться герой, перевіряється і заповнюється список героїв яких нарандомило
+                your_hero = random.randrange(0, hero_count)
+                if hero_pool[your_hero] not in picked_heroes:
+                    picked_heroes.append(hero_pool[your_hero])
+                    print_to_output(player_name + ", you're playing... " + hero_pool[your_hero])
+                    break
+
+        elif document["duplicate_same_team"].checked == True and document["duplicate_opposite_team"].checked == True: # повторювані дозволені для усіх
+            print("both duplicates")
+            your_hero = random.randrange(0, hero_count)
+            print_to_output(player_name + ", you're playing... " + hero_pool[your_hero])
+
+        elif document["duplicate_same_team"].checked == True and document["duplicate_opposite_team"].checked == False: # повторювані дозволені тільки для однієї команди
+            print("only same has duplicates")
+            your_hero = random.randrange(0, hero_count)
+            picked_heroes.append(hero_pool[your_hero])
+            print_to_output(player_name + ", you're playing... " + hero_pool[your_hero])
+            print(picked_heroes)
+            
+        elif document["duplicate_same_team"].checked == False and document["duplicate_opposite_team"].checked == True: # повторювані дозволені тільки для протилежних команд
+            while True: # рандомиться герой, перевіряється і заповнюється список героїв яких нарандомило
+                your_hero = random.randrange(0, hero_count)
+                if hero_pool[your_hero] not in picked_heroes_team_a:
+                    picked_heroes_team_a.append(hero_pool[your_hero])
+                    print_to_output(player_name + ", you're playing... " + hero_pool[your_hero])
+                    break
+            print(picked_heroes_team_a)
+
+
+    for player_name, banned_characters in current_players_team_b.items(): # для кожної гравця з команди b тут створюється список дозволених персонажів
+        hero_pool = []
+        for name in Heroes:
+            if name not in banned_characters:
+                hero_pool.append(name)
+        hero_count = len(hero_pool)
+
+        if document["duplicate_same_team"].checked == False and document["duplicate_opposite_team"].checked == False: # повторювані не дозволені
+            print("no duplicates")
+            print(picked_heroes)
+            while True: # рандомиться герой, перевіряється і заповнюється список героїв яких нарандомило
+                your_hero = random.randrange(0, hero_count)
+                if hero_pool[your_hero] not in picked_heroes:
+                    picked_heroes.append(hero_pool[your_hero])
+                    print_to_output(player_name + ", you're playing... " + hero_pool[your_hero])
+                    break
+
+        elif document["duplicate_same_team"].checked == True and document["duplicate_opposite_team"].checked == True: # повторювані дозволені для усіх
+            print("both duplicates")
+            your_hero = random.randrange(0, hero_count)
+            print_to_output(player_name + ", you're playing... " + hero_pool[your_hero])
+            
+        elif document["duplicate_same_team"].checked == True and document["duplicate_opposite_team"].checked == False: # повторювані дозволені тільки для однієї команди
+            print("only same has duplicates")
+            print(picked_heroes)
+            while True: # рандомиться герой, перевіряється і заповнюється список героїв яких нарандомило
+                your_hero = random.randrange(0, hero_count)
+                if hero_pool[your_hero] not in picked_heroes:
+                    print_to_output(player_name + ", you're playing... " + hero_pool[your_hero])
+                    break
+
+        elif document["duplicate_same_team"].checked == False and document["duplicate_opposite_team"].checked == True: # повторювані дозволені тільки для протилежних команд
+            while True: # рандомиться герой, перевіряється і заповнюється список героїв яких нарандомило
+                your_hero = random.randrange(0, hero_count)
+                if hero_pool[your_hero] not in picked_heroes_team_b:
+                    picked_heroes_team_b.append(hero_pool[your_hero])
+                    print_to_output(player_name + ", you're playing... " + hero_pool[your_hero])
+                    break
+            print(picked_heroes_team_b)
+
+
+@bind("#cancel", "click")
+def cancel_form_uninert(event):
+    document["myForm"].style.display = "none"
+    for team in ["a", "b"]:
+        for n in range(1,7):
+            if document[f"team_{team}_player{n}_name"].value == "Custom":
+                document[f"team_{team}_player{n}_name"].value = "None"
+                for team in ["a", "b"]:
+                    for n in range(1,7):
+                        document[f"team_{team}_player{n}_name"].inert = False
+                document["rand-btn"].inert = False
+                document["duplicate_same_team"].inert = False
+                document["duplicate_opposite_team"].inert = False
+                break
+
+
+@bind("#accept", "click")
+def accept_name(event):
+    event = window.Event.new("change")
+    global last_target
+    print(last_target)
+    if document["enter_player_name"].value in all_players.keys():
+        print("player already exists")
+        return
+    elif document["enter_player_name"].value not in all_players.keys():
+        all_players[document["enter_player_name"].value] = []
+        for team in ["a", "b"]:
+            for n in range(1,7):
+                document[f"team_{team}_player{n}_name"] <= html.OPTION(document["enter_player_name"].value)
+                document[f"team_{team}_player{n}_name"].inert = False
+        document["rand-btn"].inert = False
+        document["duplicate_same_team"].inert = False
+        document["duplicate_opposite_team"].inert = False
+        last_target.value = document["enter_player_name"].value
+        last_target.dispatchEvent(event)
+        document["myForm"].style.display = "none"
+
+
+</script>
+
+</body>
+</html>
+
+
+
